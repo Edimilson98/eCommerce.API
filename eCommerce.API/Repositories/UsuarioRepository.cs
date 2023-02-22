@@ -64,42 +64,112 @@ namespace eCommerce.API.Repositories
 
         public Usuario Get(int id)
         {
-            return _db.FirstOrDefault(a => a.Id == id);
+            try
+            {
+                SqlCommand command = new SqlCommand();
+                command.CommandText = "SELECT * FROM Usuarios WHERE Id = @Id";
+                command.Parameters.AddWithValue("@Id", id);
+                command.Connection = (SqlConnection)_connection;
+
+                _connection.Open();
+                SqlDataReader dataReader = command.ExecuteReader();
+
+                while (dataReader.Read())
+                {
+                    Usuario usuario = new Usuario();
+                    usuario.Id = dataReader.GetInt32("Id");
+                    usuario.Nome = dataReader.GetString("Nome");
+                    usuario.Email = dataReader.GetString("Email");
+                    usuario.Sexo = dataReader.GetString("Sexo");
+                    usuario.RG = dataReader.GetString("RG");
+                    usuario.CPF = dataReader.GetString("CPF");
+                    usuario.NomeMae = dataReader.GetString("NomeMae");
+                    usuario.SituacaoCadastro = dataReader.GetString("SituacaoCadastro");
+                    usuario.DataCadastro = dataReader.GetDateTimeOffset(8);
+
+                    return usuario;
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+
+            return null;
         }
 
         public void Insert(Usuario usuario)
         {
-            var ultimoUsuario = _db.LastOrDefault();
+           try
+            {
+                SqlCommand command = new SqlCommand();
+                command.CommandText = "INSERT INTO Usuarios(Nome, Email, Sexo, RG, CPF, NomeMae, SituacaoCadastro, DataCadastro) VALUES (@Nome, @Email, @Sexo, @RG, @CPF, @NomeMae, @SituacaoCadastro, @DataCadastro);SELECT CAST (scope_identity() AS int)";
+                command.Connection = (SqlConnection)_connection;
 
-            if(ultimoUsuario == null)
-            {
-                usuario.Id = 1;
+                command.Parameters.AddWithValue("@Nome", usuario.Nome);
+                command.Parameters.AddWithValue("@Email", usuario.Email);
+                command.Parameters.AddWithValue("@Sexo", usuario.Sexo);
+                command.Parameters.AddWithValue("@RG", usuario.RG);
+                command.Parameters.AddWithValue("@CPF", usuario.CPF);
+                command.Parameters.AddWithValue("@NomeMae", usuario.NomeMae);
+                command.Parameters.AddWithValue("@SituacaoCadastro", usuario.SituacaoCadastro);
+                command.Parameters.AddWithValue("@DataCadastro", usuario.DataCadastro);
+
+                _connection.Open();
+                usuario.Id = (int)command.ExecuteScalar();
             }
-            else
+            finally
             {
-                usuario.Id = ultimoUsuario.Id;
-                usuario.Id++;
+                _connection.Close();
             }
-            _db.Add(usuario);
         }
 
         public void Update(Usuario usuario)
         {
-            _db.Remove(_db.FirstOrDefault(a => a.Id == usuario.Id));
-            _db.Add(usuario);
+           try
+            {
+                SqlCommand command = new SqlCommand();
+                command.CommandText = "UPDATE Usuarios SET Nome = @Nome, Email = @Email, Sexo = @Sexo, RG = @RG, CPF = @CPF, NomeMae = @NomeMae, SituacaoCadastro = @SituacaoCadastro, DataCadastro = @DataCadastro WHERE Id = @Id";
+                command.Connection = (SqlConnection)_connection;
+
+                command.Parameters.AddWithValue("@Nome", usuario.Nome);
+                command.Parameters.AddWithValue("@Email", usuario.Email);
+                command.Parameters.AddWithValue("@Sexo", usuario.Sexo);
+                command.Parameters.AddWithValue("@RG", usuario.RG);
+                command.Parameters.AddWithValue("@CPF", usuario.CPF);
+                command.Parameters.AddWithValue("@NomeMae", usuario.NomeMae);
+                command.Parameters.AddWithValue("@SituacaoCadastro", usuario.SituacaoCadastro);
+                command.Parameters.AddWithValue("@DataCadastro", usuario.DataCadastro);
+
+                command.Parameters.AddWithValue("@Id", usuario.Id);
+
+                _connection.Open();
+                command.ExecuteNonQuery();
+            }
+            finally
+            {
+                _connection.Close();
+            }
         }
 
         public void Delete(int id)
         {
-            _db.Remove(_db.FirstOrDefault(a => a.Id == id));
+            try
+            {
+                SqlCommand command = new SqlCommand();
+                command.CommandText = "DELETE FROM Usuarios WHERE Id = @Id";
+                command.Connection = (SqlConnection)_connection;
+
+                command.Parameters.AddWithValue("@Id", id);
+
+                _connection.Open();
+                command.ExecuteNonQuery();
+            }
+            finally
+            {
+                _connection.Close();
+            }
         }
-
-
-        private static List<Usuario> _db = new List<Usuario>()
-        {
-            new Usuario() { Id=1, Nome="Filipe Rodrigues", Email="filipe.rodrigues@gmail.com" },
-            new Usuario() { Id=2, Nome="Marcelo Rodrigues", Email="marcelo.rodrigues@gmail.com" },
-            new Usuario() { Id=3, Nome="Marcela Rodrigues", Email="marcela.rodrigues@gmail.com" }
-        };
     }
 }
