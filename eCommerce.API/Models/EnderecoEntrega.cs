@@ -7,7 +7,7 @@ namespace eCommerce.API.Models
 {
     public class EnderecoEntrega
     {
-        public int MyPrIdoperty { get; set; }
+        public int Id { get; set; }
         public int UsuarioId { get; set; }
         public string NomeEndereco { get; set; }
         public string CEP { get; set; }
